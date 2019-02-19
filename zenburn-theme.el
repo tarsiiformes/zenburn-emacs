@@ -101,6 +101,7 @@ defining them in this alist."
 
 ;;; Color Palette
 
+;;;###autoload
 (defvar zenburn-default-colors-alist
   '(("zenburn-fg+1"     . "#FFFFEF")
     ("zenburn-fg"       . "#DCDCCC")
@@ -152,6 +153,21 @@ Each element has the form (NAME . HEX).
 
 `+N' suffixes indicate a color is lighter.
 `-N' suffixes indicate a color is darker.")
+
+(defvar zenburn-rainbow-font-lock-keywords nil
+  "Zenburn-specific font-lock keywords to add when using Rainbow mode.")
+
+;;;###autoload
+(defun zenburn-update-rainbow-font-lock-keywords ()
+  (require 'zenburn-theme)
+  (if (bound-and-true-p rainbow-mode)
+      (progn
+        (unless zenburn-rainbow-font-lock-keywords
+          (setq zenburn-rainbow-font-lock-keywords
+                `((,(regexp-opt (mapcar #'car zenburn-default-colors-alist) 'words)
+                   (0 (rainbow-colorize-by-assoc zenburn-default-colors-alist))))))
+        (font-lock-add-keywords nil zenburn-rainbow-font-lock-keywords t))
+    (font-lock-remove-keywords  nil zenburn-rainbow-font-lock-keywords)))
 
 (defmacro zenburn-with-color-variables (&rest body)
   "`let' bind all colors defined in `zenburn-colors-alist' around BODY.
@@ -1615,6 +1631,8 @@ This requires library `rainbow-mode'.")
 ;; Local Variables:
 ;; no-byte-compile: t
 ;; indent-tabs-mode: nil
-;; eval: (when (require 'rainbow-mode nil t) (rainbow-mode 1))
+;; eval: (require 'rainbow-mode nil t)
+;; eval: (add-hook 'rainbow-keywords-hook #'zenburn-update-rainbow-font-lock-keywords nil t)
+;; eval: (when (featurep 'rainbow-mode) (rainbow-mode 1))
 ;; End:
 ;;; zenburn-theme.el ends here
